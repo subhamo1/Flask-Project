@@ -1,0 +1,7 @@
+Flask==3.0.2
+Flask-SQLAlchemy==3.1.1
+MarkupSafe==2.1.2
+Werkzeug==3.0.1
+itsdangerous==2.1.2
+boto3==1.9.148
+kubernetes==10.0.1
