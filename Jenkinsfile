@@ -1,46 +1,73 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKER_IMAGE = 'subh12/todoapp:latest'
-        APP_PORT = '5000'
+        VENV_DIR = 'venv'
+        APP_DIR = 'flask_app'
     }
-    
+
     stages {
-        stage('Build Docker Image') {
+        stage('Checkout') {
             steps {
-                script {
-                    
-                    docker.build("${DOCKER_IMAGE}", "--file Dockerfile .")
-                }
+                checkout scm
             }
         }
-        
+
+        stage('Setup Python Environment') {
+            steps {
+                sh '''
+                    python3 -m venv $VENV_DIR
+                    . $VENV_DIR/bin/activate
+                    pip install -r requirements.txt
+                '''
+            }
+        }
+
         stage('Run Tests') {
             steps {
-                script {
-                  
-                    docker.image("${DOCKER_IMAGE}").inside("--publish ${APP_PORT}:${APP_PORT}") {
-                        sh 'pip3 install --no-cache-dir -r requirements.txt'
-                        sh 'python3 -m pytest'
-                    }
-                }
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    pytest
+                '''
             }
         }
-        
-        stage('Deploy') {
+
+        stage('Build') {
             steps {
-                script {
-                   
-                    docker.image("${DOCKER_IMAGE}").run("--publish ${APP_PORT}:${APP_PORT}")
-                }
+                sh '''
+                    . $VENV_DIR/bin/activate
+                    python setup.py install
+                '''
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                sh '''
+                    echo "Deploying to Staging environment"
+                    # Add your deployment commands here, e.g., copying files to a server
+                '''
+            }
+        }
+
+        stage('Approval for Production Deployment') {
+            steps {
+                input 'Approve deployment to production?'
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                sh '''
+                    echo "Deploying to Production environment"
+                    # Add your production deployment commands here
+                '''
             }
         }
     }
-    
+
     post {
         always {
-           
             cleanWs()
         }
     }
