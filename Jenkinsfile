@@ -9,6 +9,11 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/subhamo1/Flask-Project.git'
             }
         }
+        stage('Install Python') {
+    steps {
+        sh 'apt-get update && apt-get install -y python3 python3-pip'
+    }
+}
 
         stage('Build') {
             steps {
